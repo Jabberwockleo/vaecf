@@ -19,7 +19,6 @@ import tensorflow as tf
 from tensorflow.contrib.layers import apply_regularization, l2_regularizer
 import bottleneck as bn
 
-
 class MultiDAE(object):
     """
         Multinomial Denoising Autoencoder
