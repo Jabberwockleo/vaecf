@@ -19,18 +19,13 @@ import tensorflow as tf
 import vaecf as model
 import vaecf_metric as metric
 
-def evaluate(n_users, n_items, train_data, vad_data_tr, vad_data_te, test_data_tr, test_data_te):
-    N_test = test_data_tr.shape[0]
-    idxlist_test = range(N_test)
+# the total number of gradient updates for annealing
+total_anneal_steps = 200000
+# largest annealing parameter
+anneal_cap = 0.2
 
-    # validation batch size (since the entire validation set might not fit into GPU memory)
-    batch_size_test = 2000
 
-    # the total number of gradient updates for annealing
-    total_anneal_steps = 200000
-    # largest annealing parameter
-    anneal_cap = 0.2
-
+def predict(base_sididx_arr, n_items):
     # layer node num
     p_dims = [200, 600, n_items]
 
@@ -41,6 +36,39 @@ def evaluate(n_users, n_items, train_data, vad_data_tr, vad_data_te, test_data_t
     arch_str = "I-%s-I" % ('-'.join([str(d) for d in vae.dims[1:-1]]))
     chkpt_dir = './chkpt/VAE_anneal{}K_cap{:1.1E}/{}'.format(
         total_anneal_steps/1000, anneal_cap, arch_str)
+    
+    with tf.Session() as sess:
+        saver.restore(sess, '{}/model'.format(chkpt_dir))
+        # history repr
+        X = sparse.csr_matrix((np.ones_like(base_sididx_arr), (np.zeros_like(base_sididx_arr), base_sididx_arr)), shape=(1, n_items), dtype=np.int16)
+        if sparse.isspmatrix(X):
+            X = X.toarray()
+        X = X.astype('float32')
+        # predict multinomial
+        pred_val = sess.run(logits_var, feed_dict={vae.input_ph: X})
+        # exclude examples from training and validation (if any)
+        pred_val[X.nonzero()] = -np.inf
+        return pred_val
+
+
+def evaluate(n_users, n_items, train_data, vad_data_tr, vad_data_te, test_data_tr, test_data_te):
+    # layer node num
+    p_dims = [200, 600, n_items]
+
+    tf.reset_default_graph()
+    vae = model.MultiVAE(p_dims, lam=0.0)
+    saver, logits_var, _, _, _ = vae.build_graph()
+
+    arch_str = "I-%s-I" % ('-'.join([str(d) for d in vae.dims[1:-1]]))
+    chkpt_dir = './chkpt/VAE_anneal{}K_cap{:1.1E}/{}'.format(
+        total_anneal_steps/1000, anneal_cap, arch_str)
+    
+    N_test = test_data_tr.shape[0]
+    idxlist_test = range(N_test)
+
+    # validation batch size (since the entire validation set might not fit into GPU memory)
+    batch_size_test = 2000
+
     print("chkpt directory: %s" % chkpt_dir)
 
     n100_list, r20_list, r50_list = [], [], []
