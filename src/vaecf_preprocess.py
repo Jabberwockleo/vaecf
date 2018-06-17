@@ -29,15 +29,9 @@ def preprocess_data(data_dir=DATA_DIR, fn_uid_sids=fn_uid_sids):
     n_items = len(sid2idx)
     print('n_items:{}'.format(n_items))
 
-    train_data = util.load_input_data(fn_train, shape=(n_users, n_items))
-    vad_data = util.load_input_data(fn_dev, shape=(n_users, n_items))
-    test_data = util.load_input_data(fn_test, shape=(n_users, n_items))
-
-    vad_data_tr = train_data
-    vad_data_te = vad_data
-
-    test_data_tr = train_data
-    test_data_te = test_data
+    train_data, _ = util.load_input_data(fn_train, n_items=n_items, split_train_test=False)
+    vad_data_tr, vad_data_te = util.load_input_data(fn_dev, n_items=n_items, split_train_test=True)
+    test_data_tr, test_data_te = util.load_input_data(fn_test, n_items=n_items, split_train_test=True)
 
     return tuple([idx2uid, uid2idx, idx2sid, sid2idx, uid_sids_dict,
                   n_users, n_items,

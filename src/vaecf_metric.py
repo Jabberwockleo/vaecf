@@ -35,7 +35,9 @@ def NDCG_binary_at_k_batch(X_pred, heldout_batch, k=100):
                          idx_topk].toarray() * tp).sum(axis=1)
     IDCG = np.array([(tp[:min(n, k)]).sum()
                      for n in heldout_batch.getnnz(axis=1)])
-    return DCG / IDCG
+    #print('DCG:{}, IDCG:{}'.format(str(DCG), str(IDCG)))
+    NDCG = DCG / IDCG
+    return NDCG
 
 
 def Recall_at_k_batch(X_pred, heldout_batch, k=100):

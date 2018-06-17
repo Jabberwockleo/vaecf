@@ -18,6 +18,9 @@ import numpy as np
 from scipy import sparse
 import tensorflow as tf
 
+import matplotlib.pyplot as plt
+IS_ILLUSTRATED = True
+
 import vaecf as model
 import vaecf_metric as metric
 
@@ -26,7 +29,7 @@ def train(n_users, n_items, train_data, vad_data_tr, vad_data_te, test_data_tr, 
     idxlist = list(range(N))
 
     # training batch size
-    batch_size = 500
+    batch_size = 5000
     batches_per_epoch = int(np.ceil(float(N) / batch_size))
 
     N_vad = vad_data_tr.shape[0]
@@ -42,6 +45,9 @@ def train(n_users, n_items, train_data, vad_data_tr, vad_data_te, test_data_tr, 
 
     # layer node num
     p_dims = [200, 600, n_items]
+    
+    # epoch num
+    n_epochs = 200
 
     tf.reset_default_graph()
     vae = model.MultiVAE(p_dims, lam=0.0, random_seed=98765)
@@ -72,7 +78,6 @@ def train(n_users, n_items, train_data, vad_data_tr, vad_data_te, test_data_tr, 
 
     print("chkpt directory: %s" % chkpt_dir)
 
-    n_epochs = 200
     ndcgs_vad = []
 
     with tf.Session() as sess:
@@ -90,6 +95,7 @@ def train(n_users, n_items, train_data, vad_data_tr, vad_data_te, test_data_tr, 
             # train for one epoch
             for bnum, st_idx in enumerate(range(0, N, batch_size)):
                 end_idx = min(st_idx + batch_size, N)
+                print('  batch_num:{} start_index:{} end_index:{} N:{}'.format(bnum, st_idx, end_idx, N))
                 X = train_data[idxlist[st_idx:end_idx]]
 
                 if sparse.isspmatrix(X):
@@ -118,6 +124,7 @@ def train(n_users, n_items, train_data, vad_data_tr, vad_data_te, test_data_tr, 
             ndcg_dist = []
             for bnum, st_idx in enumerate(range(0, N_vad, batch_size_vad)):
                 end_idx = min(st_idx + batch_size_vad, N_vad)
+                print('  batch_num:{} start_index:{} end_index:{} N_vad:{}'.format(bnum, st_idx, end_idx, N_vad))
                 X = vad_data_tr[idxlist_vad[st_idx:end_idx]]
 
                 if sparse.isspmatrix(X):
@@ -136,14 +143,16 @@ def train(n_users, n_items, train_data, vad_data_tr, vad_data_te, test_data_tr, 
             summary_writer.add_summary(merged_valid_val, epoch)
 
             # update the best model (if necessary)
+            print('  cur_ndcg:{} best_ndcg:{}'.format(ndcg_, best_ndcg))
             if ndcg_ > best_ndcg:
                 saver.save(sess, '{}/model'.format(chkpt_dir))
                 best_ndcg = ndcg_
 
-    fig = plt.figure(figsize=(12, 3))
-    plt.plot(ndcgs_vad)
-    plt.ylabel("Validation NDCG@100")
-    plt.xlabel("Epochs")
-    fig.savefig('training_curve.png')
-    plt.close(fig)
+    if IS_ILLUSTRATED:
+        fig = plt.figure(figsize=(12, 3))
+        plt.plot(ndcgs_vad)
+        plt.ylabel("Validation NDCG@100")
+        plt.xlabel("Epochs")
+        fig.savefig('training_curve.png')
+        plt.close(fig)
     return vae
