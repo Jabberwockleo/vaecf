@@ -16,7 +16,7 @@ import os
 import vaecf_util as util
 
 DATA_DIR = '../data/'
-fn_uid_sids = 'sample_uid_sids.txt'
+fn_uid_sids = 'uid_sids.txt'
 
 def preprocess_data(data_dir=DATA_DIR, fn_uid_sids=fn_uid_sids):
     idx2uid, uid2idx, idx2sid, sid2idx = util.make_index(os.path.join(DATA_DIR, fn_uid_sids))
