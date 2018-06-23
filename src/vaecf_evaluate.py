@@ -45,7 +45,7 @@ def predict(base_sididx_arr, n_items):
             X = X.toarray()
         X = X.astype('float32')
         # predict multinomial
-        pred_val = sess.run(logits_var, feed_dict={vae.input_ph: X})
+        pred_val = sess.run(logits_var, feed_dict={vae.input_ph: X, vae.is_training_ph: 0})
         # exclude examples from training and validation (if any)
         pred_val[X.nonzero()] = -np.inf
         return pred_val
@@ -84,7 +84,7 @@ def evaluate(n_users, n_items, train_data, vad_data_tr, vad_data_te, test_data_t
                 X = X.toarray()
             X = X.astype('float32')
 
-            pred_val = sess.run(logits_var, feed_dict={vae.input_ph: X})
+            pred_val = sess.run(logits_var, feed_dict={vae.input_ph: X, vae.is_training_ph: 0})
             # exclude examples from training and validation (if any)
             pred_val[X.nonzero()] = -np.inf
             n100_list.append(metric.NDCG_binary_at_k_batch(pred_val, test_data_te[idxlist_test[st_idx:end_idx]], k=100))
