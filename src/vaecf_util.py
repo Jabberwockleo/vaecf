@@ -105,7 +105,7 @@ def make_sid_index(sid_cnt_dict):
     return sorted(sid_cnt_dict.items(), key=operator.itemgetter(1), reverse=True)
 
 
-def make_index(fn, min_cnt=5):
+def make_index(fn, min_cnt=5, max_sid_cnt=50000):
     """
         Index
     """
@@ -116,6 +116,7 @@ def make_index(fn, min_cnt=5):
     sid2idx = {}
     sid_index_arr = make_sid_index(make_sid_count_dict(fn))
     idx = 0
+    sid_index_arr = sorted(sid_index_arr, key=lambda x:[1], reverse=True)[:max_sid_cnt]
     for sid, cnt in sid_index_arr:
         if cnt < min_cnt:
             continue

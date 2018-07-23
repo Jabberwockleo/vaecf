@@ -50,6 +50,7 @@ class MultiDAE(object):
 
         saver, logits = self.forward_pass()
         log_softmax_var = tf.nn.log_softmax(logits)
+        self.logits = logits
 
         # per-user average negative log-likelihood
         neg_ll = -tf.reduce_mean(tf.reduce_sum(
@@ -122,6 +123,7 @@ class MultiVAE(MultiDAE):
 
         saver, logits, KL = self.forward_pass()
         log_softmax_var = tf.nn.log_softmax(logits)
+        self.logits = logits
 
         neg_ll = -tf.reduce_mean(tf.reduce_sum(
             log_softmax_var * self.input_ph,
