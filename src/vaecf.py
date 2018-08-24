@@ -36,6 +36,7 @@ class MultiDAE(object):
         self.lam = lam
         self.lr = lr
         self.random_seed = random_seed
+        self.top_k = min(p_dims[-1], 500)
 
         self.construct_placeholders()
 
@@ -51,6 +52,8 @@ class MultiDAE(object):
         saver, logits = self.forward_pass()
         log_softmax_var = tf.nn.log_softmax(logits)
         self.logits = logits
+        
+        self.logits_top_values, self.logits_top_indices = tf.nn.top_k(logits, k=self.top_k)
 
         # per-user average negative log-likelihood
         neg_ll = -tf.reduce_mean(tf.reduce_sum(
@@ -124,6 +127,8 @@ class MultiVAE(MultiDAE):
         saver, logits, KL = self.forward_pass()
         log_softmax_var = tf.nn.log_softmax(logits)
         self.logits = logits
+        
+        self.logits_top_values, self.logits_top_indices = tf.nn.top_k(logits, k=self.top_k)
 
         neg_ll = -tf.reduce_mean(tf.reduce_sum(
             log_softmax_var * self.input_ph,
