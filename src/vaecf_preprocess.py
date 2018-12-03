@@ -19,7 +19,7 @@ DATA_DIR = '../data/'
 fn_uid_sids = 'uid_sids.txt'
 
 def preprocess_data(data_dir=DATA_DIR, fn_uid_sids=fn_uid_sids):
-    idx2uid, uid2idx, idx2sid, sid2idx = util.make_index(os.path.join(DATA_DIR, fn_uid_sids))
+    idx2uid, uid2idx, idx2sid, sid2idx = util.make_index(os.path.join(DATA_DIR, fn_uid_sids), max_sid_cnt=10000)
     uid_sids_dict = util.make_uid_sids_dict(os.path.join(DATA_DIR, fn_uid_sids))
     fn_train, fn_dev, fn_test = util.make_train_dev_test_files(
         idx2uid, uid2idx, idx2sid, sid2idx, uid_sids_dict)

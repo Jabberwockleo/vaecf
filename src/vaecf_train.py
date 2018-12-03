@@ -29,14 +29,14 @@ def train(n_users, n_items, train_data, vad_data_tr, vad_data_te, test_data_tr, 
     idxlist = list(range(N))
 
     # training batch size
-    batch_size = 5000
+    batch_size = 500
     batches_per_epoch = int(np.ceil(float(N) / batch_size))
 
     N_vad = vad_data_tr.shape[0]
     idxlist_vad = list(range(N_vad))
 
     # validation batch size (since the entire validation set might not fit into GPU memory)
-    batch_size_vad = 2000
+    batch_size_vad = 500
 
     # the total number of gradient updates for annealing
     total_anneal_steps = 200000
@@ -95,7 +95,8 @@ def train(n_users, n_items, train_data, vad_data_tr, vad_data_te, test_data_tr, 
             # train for one epoch
             for bnum, st_idx in enumerate(range(0, N, batch_size)):
                 end_idx = min(st_idx + batch_size, N)
-                print('  batch_num:{} start_index:{} end_index:{} N:{}'.format(bnum, st_idx, end_idx, N))
+                if bnum % 10 == 0:
+                    print('  batch_num:{} start_index:{} end_index:{} N_vad:{}'.format(bnum, st_idx, end_idx, N_vad))
                 X = train_data[idxlist[st_idx:end_idx]]
 
                 if sparse.isspmatrix(X):
@@ -124,7 +125,8 @@ def train(n_users, n_items, train_data, vad_data_tr, vad_data_te, test_data_tr, 
             ndcg_dist = []
             for bnum, st_idx in enumerate(range(0, N_vad, batch_size_vad)):
                 end_idx = min(st_idx + batch_size_vad, N_vad)
-                print('  batch_num:{} start_index:{} end_index:{} N_vad:{}'.format(bnum, st_idx, end_idx, N_vad))
+                if bnum % 10 == 0:
+                    print('  batch_num:{} start_index:{} end_index:{} N_vad:{}'.format(bnum, st_idx, end_idx, N_vad))
                 X = vad_data_tr[idxlist_vad[st_idx:end_idx]]
 
                 if sparse.isspmatrix(X):
